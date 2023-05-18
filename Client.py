@@ -40,21 +40,46 @@ def read_config():
 
     if not os.path.isfile(config_file):
         show_config_error_not_found()
-        return create_default_config("config.json")
+        configure_server()
+        return None
 
     with open(config_file, 'r') as f:
         config = json.load(f)
 
     return config
-def create_default_config(config_file):
-    default_config = {
-        "server_host": "localhost",
-        "server_port": 1234,
+def save_config(root, server_host, server_port):
+    if not is_valid_ipv4(server_host):
+        messagebox.showerror("Fehler", "Ungültige IPv4-Adresse")
+        return
+
+    root.destroy()
+
+    config = {
+        "server_host": server_host,
+        "server_port": server_port
     }
 
-    with open(config_file, 'w') as f:
-        json.dump(default_config, f, indent=4)
+    with open('config.json', 'w') as f:
+        json.dump(config, f, indent=4)
 
+def configure_server():
+    root = tk.Tk()
+    root.title("Server-Konfiguration")
+
+    host_label = tk.Label(root, text="Server-IP-Adresse:")
+    host_entry = tk.Entry(root)
+    port_label = tk.Label(root, text="Server-Port:")
+    port_entry = tk.Entry(root)
+
+    host_label.pack()
+    host_entry.pack()
+    port_label.pack()
+    port_entry.pack()
+
+    ok_button = tk.Button(root, text="OK", command=lambda: save_config(root, host_entry.get(), port_entry.get()))
+    ok_button.pack()
+
+    root.mainloop()
 ############################################## Utils ##############################################
 
 def is_valid_ipv4(ip):
