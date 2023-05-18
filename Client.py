@@ -6,6 +6,7 @@ import platform
 import datetime
 import json
 import os.path
+import re
 ############################################## Variablen ##############################################
 pc_name = ""
 cpu_usage = 0
@@ -53,6 +54,13 @@ def create_default_config(config_file):
 
     with open(config_file, 'w') as f:
         json.dump(default_config, f, indent=4)
+
+############################################## Utils ##############################################
+
+def is_valid_ipv4(ip):
+    pattern = re.compile(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b")
+    return pattern.match(ip)
+
 
 ############################################## Connection-to-Server ##############################################
 def send_data(server_host, server_port):
