@@ -4,10 +4,15 @@ from tkinter import messagebox
 import psutil
 import platform
 import datetime
-
+import json
+import os.path
+############################################## Variablen ##############################################
 pc_name = ""
 cpu_usage = 0
 current_time = ""
+server_host = ""
+server_port = 0
+############################################## Funktionen ##############################################
 def get_pc_name():
     pc_name = platform.node()
     return pc_name
@@ -20,11 +25,37 @@ def get_time():
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
     return current_time
 
-def show_error_message():
+############################################## Error-Messages ##############################################
+def show_connection_error_10061():
     tk.Tk().withdraw()
     messagebox.showerror("Verbindungsfehler", "[WinError 10061] Es konnte keine Verbindung hergestellt werden, da der Zielcomputer die Verbindung verweigerte.")
+def show_config_error_not_found():
+    tk.Tk().withdraw()
+    messagebox.showerror("Fehler", "Konfigurationsdatei nicht gefunden: config.json")
 
-def send_data(server_host, server_port, data):
+############################################## Config ##############################################
+def read_config():
+    config_file = "config.json"
+
+    if not os.path.isfile(config_file):
+        show_config_error_not_found()
+        return create_default_config("config.json")
+
+    with open(config_file, 'r') as f:
+        config = json.load(f)
+
+    return config
+def create_default_config(config_file):
+    default_config = {
+        "server_host": "localhost",
+        "server_port": 1234,
+    }
+
+    with open(config_file, 'w') as f:
+        json.dump(default_config, f, indent=4)
+
+############################################## Connection-to-Server ##############################################
+def send_data(server_host, server_port):
     # Verbinde mit dem Server
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -37,17 +68,21 @@ def send_data(server_host, server_port, data):
         print(f"Daten erfolgreich gesendet: {data}")
 
     except ConnectionRefusedError:
-        show_error_message()
+        show_connection_error_10061()
 
     finally:
         # Schließe die Verbindung
         client_socket.close()
 
+############################################## Main ##############################################
 if __name__ == '__main__':
-    server_host = 'localhost'  # Server-Host
-    server_port = 1234  # Server-Port
-    data = 'Hallo, Server!'  # Daten, die an den Server gesendet werden sollen
-    #while True:
-        #send_cpu_usage(server_host, server_port)
+    config = read_config()
+    pc_name = get_pc_name()
 
-
+    if config is not None:
+        server_host = config.get('server_host')
+        server_port = config.get('server_port')
+        while True:
+            cpu_usage = get_cpu_usage()
+            current_time = get_time()
+            send_data(server_host, server_port)
