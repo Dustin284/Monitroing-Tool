@@ -26,13 +26,16 @@ def get_time():
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
     return current_time
 
-############################################## Error-Messages ##############################################
+############################################## Messages ##############################################
 def show_connection_error_10061():
     tk.Tk().withdraw()
     messagebox.showerror("Verbindungsfehler", "[WinError 10061] Es konnte keine Verbindung hergestellt werden, da der Zielcomputer die Verbindung verweigerte.")
 def show_config_error_not_found():
     tk.Tk().withdraw()
     messagebox.showerror("Fehler", "Konfigurationsdatei nicht gefunden: config.json")
+def show_config_success_message():
+    tk.Tk().withdraw()
+    messagebox.showinfo("Erfolgreich", "Die Konfiguration wurde erfolgreich erstellt.")
 
 ############################################## Config ##############################################
 def read_config():
@@ -50,17 +53,22 @@ def read_config():
 def save_config(root, server_host, server_port):
     if not is_valid_ipv4(server_host):
         messagebox.showerror("Fehler", "Ungültige IPv4-Adresse")
-        return
-
+        exit()
+    if not is_valid_port(server_port):
+        messagebox.showerror("Fehler", "Ungültiger Port")
+        exit()
     root.destroy()
 
     config = {
         "server_host": server_host,
-        "server_port": server_port
+        "server_port": int(server_port)
     }
 
     with open('config.json', 'w') as f:
         json.dump(config, f, indent=4)
+
+    show_config_success_message()
+    exit()
 
 def configure_server():
     root = tk.Tk()
@@ -85,7 +93,9 @@ def configure_server():
 def is_valid_ipv4(ip):
     pattern = re.compile(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b")
     return pattern.match(ip)
-
+def is_valid_port(port):
+    pattern = re.compile(r"\b(?:[0-9]{1,5})\b")
+    return pattern.match(port)
 
 ############################################## Connection-to-Server ##############################################
 def send_data(server_host, server_port):
@@ -102,6 +112,7 @@ def send_data(server_host, server_port):
 
     except ConnectionRefusedError:
         show_connection_error_10061()
+        exit()
 
     finally:
         # Schließe die Verbindung
