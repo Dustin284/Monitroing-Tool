@@ -48,7 +48,7 @@ def start_server(host, port):
         print("Server wurde beendet.")
 
 if __name__ == '__main__':
-    host = 'localhost'  # Server-Host
+    host = '192.168.0.141'  # Server-Host
     port = 1234  # Server-Port
 
     start_server(host, port)
