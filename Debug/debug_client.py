@@ -1,5 +1,4 @@
 import socket
-import threading
 import tkinter as tk
 from tkinter import messagebox
 import psutil
@@ -119,25 +118,6 @@ def send_data(server_host, server_port):
         # Schließe die Verbindung
         client_socket.close()
 
-def connect_to_server(server_host):
-
-    # Eine TCP-Socket-Verbindung erstellen
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    try:
-        # Mit dem Server verbinden
-        client_socket.connect((server_host, 12345))
-        print("Verbindung zum Server hergestellt.")
-
-    except ConnectionRefusedError:
-        print("Die Verbindung zum Server wurde abgelehnt.")
-    except Exception as e:
-        print("Ein Fehler ist aufgetreten:", str(e))
-    finally:
-        # Socket-Verbindung schließen
-        client_socket.close()
-        print("Verbindung zum Server geschlossen.")
-
 ############################################## Main ##############################################
 if __name__ == '__main__':
     config = read_config()
@@ -150,10 +130,4 @@ if __name__ == '__main__':
         while True:
             cpu_usage = get_cpu_usage()
             current_time = get_time()
-
-            server_thread = threading.Thread(target=send_data(server_host, server_port))
-            server_thread.start()
-
-            state_connection = threading.Thread(target=connect_to_server(server_host))
-            state_connection.start()
-
+            send_data(server_host, server_port)

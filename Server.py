@@ -32,17 +32,15 @@ def handle_client(client_socket, client_address):
         print(f"Verbindung geschlossen von: {client_address}")
 
 def start_server(host, port):
-    # Erstelle einen Socket
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    # Binde den Socket an die angegebene Adresse und Port
-    server_socket.bind((server_host, server_port))
-
-    # Warte auf eingehende Verbindungen
-    server_socket.listen(5)
-    print(f"Der Server wartet auf eingehende Verbindungen auf {server_host}:{server_port}")
-
     try:
+        # Erstelle einen Socket
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        # Binde den Socket an die angegebene Adresse und Port
+        server_socket.bind((server_host, server_port))
+        # Warte auf eingehende Verbindungen
+        server_socket.listen(5)
+        print(f"Der Server wartet auf eingehende Verbindungen auf {server_host}:{server_port}")
         while True:
             # Akzeptiere eine eingehende Verbindung
             client_socket, client_address = server_socket.accept()
@@ -50,10 +48,13 @@ def start_server(host, port):
             # Starte einen Thread zur Verarbeitung des Clients
             client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
             client_thread.start()
-
+    except OSError as e:
+        if e.errno == 10048:
+            show_socket_error_10048()
     finally:
         server_socket.close()
         print("Server wurde beendet.")
+
 ############################################## Messages ##############################################
 def show_config_error_not_found():
     tk.Tk().withdraw()
@@ -61,6 +62,11 @@ def show_config_error_not_found():
 def show_config_success_message():
     tk.Tk().withdraw()
     messagebox.showinfo("Erfolgreich", "Die Konfiguration wurde erfolgreich erstellt.")
+def show_socket_error_10048():
+    tk.Tk().withdraw()
+    messagebox.showerror("Fehler", "[WinError 10048] Die angegebene Socketadresse wird bereits verwendet.")
+    exit()
+
 ############################################## Config ##############################################
 def read_config():
     config_file = "config_server.json"
@@ -86,17 +92,13 @@ def save_config():
 
     show_config_success_message()
     exit()
-############################################## Utils ##############################################
-def is_valid_ipv4(ip):
-    pattern = re.compile(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b")
-    return pattern.match(ip)
-def is_valid_port(port):
-    pattern = re.compile(r"\b(?:[0-9]{1,5})\b")
-    return pattern.match(port)
+
 ############################################## Main ##############################################
 if __name__ == '__main__':
     config = read_config()
     if config is not None:
         server_host = config.get('server_host')
         server_port = config.get('server_port')
-        start_server(host, port)
+        # Thread für den Server
+        server_thread = threading.Thread(target=start_server, args=(server_host, server_port))
+        server_thread.start()
