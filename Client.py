@@ -26,6 +26,23 @@ def get_cpu_usage():
 def get_time():
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
     return current_time
+def add_to_json():
+    try:
+        # Load existing data from the JSON file
+        with open("config_client.json", 'r') as file:
+            existing_data = json.load(file)
+
+        # Increment the specified field value
+        existing_data["send_total_stats"] += 1
+
+        # Write the updated data back to the JSON file
+        with open("config_client.json", 'w') as file:
+            json.dump(existing_data, file, indent=4)
+
+        #print("The value of 'send_total_stats' in 'config_client.json' has been incremented.")
+
+    except Exception as e:
+        print("An error occurred while updating the JSON file:", str(e))
 
 ############################################## Messages ##############################################
 def show_connection_error_10061():
@@ -62,7 +79,9 @@ def save_config(root, server_host, server_port):
 
     config = {
         "server_host": server_host,
-        "server_port": int(server_port)
+        "server_port": int(server_port),
+        "first_connection": datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+        "server_total_stats": 0,
     }
 
     with open('config_client.json', 'w') as f:
@@ -108,6 +127,7 @@ def send_data(server_host, server_port):
         # Sende die Daten an den Server
         data = f"{pc_name};{cpu_usage};{current_time}"
         client_socket.sendall(data.encode())
+        add_to_json()
         print(f"Daten erfolgreich gesendet: {data}")
 
     except ConnectionRefusedError:
