@@ -2,6 +2,10 @@ import socket
 import csv
 import threading
 import re
+import tkinter as tk
+from tkinter import messagebox
+import json
+import os.path
 ############################################## Variablen ##############################################
 host = ""
 port = 0
@@ -32,11 +36,11 @@ def start_server(host, port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # Binde den Socket an die angegebene Adresse und Port
-    server_socket.bind((host, port))
+    server_socket.bind((server_host, server_port))
 
     # Warte auf eingehende Verbindungen
     server_socket.listen(5)
-    print(f"Der Server wartet auf eingehende Verbindungen auf {host}:{port}")
+    print(f"Der Server wartet auf eingehende Verbindungen auf {server_host}:{server_port}")
 
     try:
         while True:
@@ -51,7 +55,37 @@ def start_server(host, port):
         server_socket.close()
         print("Server wurde beendet.")
 ############################################## Messages ##############################################
+def show_config_error_not_found():
+    tk.Tk().withdraw()
+    messagebox.showerror("Fehler", "Konfigurationsdatei nicht gefunden: config_server.json")
+def show_config_success_message():
+    tk.Tk().withdraw()
+    messagebox.showinfo("Erfolgreich", "Die Konfiguration wurde erfolgreich erstellt.")
 ############################################## Config ##############################################
+def read_config():
+    config_file = "config_server.json"
+
+    if not os.path.isfile(config_file):
+        show_config_error_not_found()
+        save_config()
+        show_config_success_message()
+        return None
+
+    with open(config_file, 'r') as f:
+        config = json.load(f)
+
+    return config
+def save_config():
+    config = {
+        "server_host": socket.gethostbyname(socket.gethostname()),
+        "server_port": int(1234)
+    }
+
+    with open('config_server.json', 'w') as f:
+        json.dump(config, f, indent=4)
+
+    show_config_success_message()
+    exit()
 ############################################## Utils ##############################################
 def is_valid_ipv4(ip):
     pattern = re.compile(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b")
