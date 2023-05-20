@@ -10,6 +10,7 @@ import re
 ############################################## Variablen ##############################################
 pc_name = ""
 cpu_usage = 0
+memory_usage = 0
 current_time = ""
 server_host = ""
 server_port = 0
@@ -22,6 +23,10 @@ def get_pc_name():
 def get_cpu_usage():
     cpu_usage = psutil.cpu_percent(interval=1)
     return cpu_usage
+
+def get_ram_usage():
+    ram_usage = psutil.virtual_memory().percent
+    return ram_usage
 
 def get_time():
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
@@ -81,7 +86,7 @@ def save_config(root, server_host, server_port):
         "server_host": server_host,
         "server_port": int(server_port),
         "first_connection": datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
-        "server_total_stats": 0,
+        "send_total_stats": 0,
     }
 
     with open('config_client.json', 'w') as f:
@@ -89,7 +94,6 @@ def save_config(root, server_host, server_port):
 
     show_config_success_message()
     exit()
-
 def configure_server():
     root = tk.Tk()
     root.title("Server-Konfiguration")
@@ -109,14 +113,12 @@ def configure_server():
 
     root.mainloop()
 ############################################## Utils ##############################################
-
 def is_valid_ipv4(ip):
     pattern = re.compile(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b")
     return pattern.match(ip)
 def is_valid_port(port):
     pattern = re.compile(r"\b(?:[0-9]{1,5})\b")
     return pattern.match(port)
-
 ############################################## Connection-to-Server ##############################################
 def send_data(server_host, server_port):
     # Verbinde mit dem Server
@@ -125,7 +127,7 @@ def send_data(server_host, server_port):
         client_socket.connect((server_host, server_port))
 
         # Sende die Daten an den Server
-        data = f"{pc_name};{cpu_usage};{current_time}"
+        data = f"{pc_name};{cpu_usage};{memory_usage};{current_time}"
         client_socket.sendall(data.encode())
         add_to_json()
         print(f"Daten erfolgreich gesendet: {data}")
@@ -150,4 +152,5 @@ if __name__ == '__main__':
         while True:
             cpu_usage = get_cpu_usage()
             current_time = get_time()
+            memory_usage = get_ram_usage()
             send_data(server_host, server_port)
