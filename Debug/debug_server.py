@@ -30,7 +30,29 @@ def handle_client(client_socket, client_address):
     finally:
         client_socket.close()
         print(f"Verbindung geschlossen von: {client_address}")
+def connection_from_client(server_host):
+    # Eine TCP-Socket-Verbindung erstellen
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        # Server an die IP-Adresse und den Port binden
+        server_socket.bind((server_host, 12345))
 
+        # Auf eingehende Verbindungen lauschen
+        server_socket.listen()
+
+        print("Server gestartet. Warte auf Verbindung...")
+
+        # Verbindung vom Client akzeptieren
+        client_socket, client_address = server_socket.accept()
+        print("Verbindung hergestellt mit:", client_address)
+
+    except Exception as e:
+        print("Ein Fehler ist aufgetreten:", str(e))
+    finally:
+        # Socket-Verbindungen schließen
+        client_socket.close()
+        server_socket.close()
+        print("Server gestoppt.")
 def start_server(host, port):
     try:
         # Erstelle einen Socket
@@ -110,6 +132,6 @@ if __name__ == '__main__':
         server_thread = threading.Thread(target=start_server, args=(server_host, server_port))
         server_thread.start()
 
-        # Thread für die GUI
-        gui_thread = threading.Thread(target=create_gui)
-        gui_thread.start()
+        # Thread für dauerhafte Verbindung zum Server
+        state_connection = threading.Thread(target=connection_from_client(server_host))
+        state_connection.start()
