@@ -3,6 +3,8 @@ import csv
 import threading
 import re
 ############################################## Variablen ##############################################
+host = ""
+port = 0
 ############################################## Funktionen ##############################################
 def handle_client(client_socket, client_address):
     try:
