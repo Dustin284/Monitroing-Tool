@@ -32,14 +32,14 @@ def show_connection_error_10061():
     messagebox.showerror("Verbindungsfehler", "[WinError 10061] Es konnte keine Verbindung hergestellt werden, da der Zielcomputer die Verbindung verweigerte.")
 def show_config_error_not_found():
     tk.Tk().withdraw()
-    messagebox.showerror("Fehler", "Konfigurationsdatei nicht gefunden: config.json")
+    messagebox.showerror("Fehler", "Konfigurationsdatei nicht gefunden: config_client.json")
 def show_config_success_message():
     tk.Tk().withdraw()
     messagebox.showinfo("Erfolgreich", "Die Konfiguration wurde erfolgreich erstellt.")
 
 ############################################## Config ##############################################
 def read_config():
-    config_file = "config.json"
+    config_file = "config_client.json"
 
     if not os.path.isfile(config_file):
         show_config_error_not_found()
@@ -64,7 +64,7 @@ def save_config(root, server_host, server_port):
         "server_port": int(server_port)
     }
 
-    with open('config.json', 'w') as f:
+    with open('config_client.json', 'w') as f:
         json.dump(config, f, indent=4)
 
     show_config_success_message()
