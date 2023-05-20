@@ -1,7 +1,8 @@
 import socket
 import csv
 import threading
-
+############################################## Variablen ##############################################
+############################################## Funktionen ##############################################
 def handle_client(client_socket, client_address):
     try:
         print(f"Verbindung hergestellt von: {client_address}")
@@ -46,9 +47,13 @@ def start_server(host, port):
     finally:
         server_socket.close()
         print("Server wurde beendet.")
-
+############################################## Messages ##############################################
+############################################## Config ##############################################
+############################################## Utils ##############################################
+############################################## Main ##############################################
 if __name__ == '__main__':
-    host = '192.168.0.141'  # Server-Host
-    port = 1234  # Server-Port
-
-    start_server(host, port)
+    config = read_config()
+    if config is not None:
+        server_host = config.get('server_host')
+        server_port = config.get('server_port')
+        start_server(host, port)
