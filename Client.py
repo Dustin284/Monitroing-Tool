@@ -13,6 +13,7 @@ cpu_usage = 0
 current_time = ""
 server_host = ""
 server_port = 0
+client_socket = None
 ############################################## Funktionen ##############################################
 def get_pc_name():
     pc_name = platform.node()
@@ -30,13 +31,13 @@ def get_time():
 def show_connection_error_10061():
     tk.Tk().withdraw()
     messagebox.showerror("Verbindungsfehler", "[WinError 10061] Es konnte keine Verbindung hergestellt werden, da der Zielcomputer die Verbindung verweigerte.")
+    exit()
 def show_config_error_not_found():
     tk.Tk().withdraw()
     messagebox.showerror("Fehler", "Konfigurationsdatei nicht gefunden: config_client.json")
 def show_config_success_message():
     tk.Tk().withdraw()
     messagebox.showinfo("Erfolgreich", "Die Konfiguration wurde erfolgreich erstellt.")
-
 ############################################## Config ##############################################
 def read_config():
     config_file = "config_client.json"
@@ -103,7 +104,6 @@ def send_data(server_host, server_port):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         client_socket.connect((server_host, server_port))
-        print(f"Verbindung hergestellt zu: {server_host}:{server_port}")
 
         # Sende die Daten an den Server
         data = f"{pc_name};{cpu_usage};{current_time}"
@@ -126,6 +126,7 @@ if __name__ == '__main__':
     if config is not None:
         server_host = config.get('server_host')
         server_port = config.get('server_port')
+        print(f"Verbindung hergestellt zu: {server_host}:{server_port}")
         while True:
             cpu_usage = get_cpu_usage()
             current_time = get_time()

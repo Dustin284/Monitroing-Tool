@@ -18,11 +18,11 @@ def handle_client(client_socket, client_address):
         data = client_socket.recv(1024).decode()
 
         # Speichere die Daten in einer CSV-Datei
-        with open('cpu_data.csv', 'a', newline='') as csvfile:
+        with open('data.csv', 'a', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(data.split(';'))
 
-        print(f"Daten empfangen und in 'cpu_data.csv' gespeichert: {data}")
+        print(f"Daten empfangen und in 'data.csv' gespeichert: {data}")
 
     except ConnectionResetError:
         print(f"Verbindung von {client_address} unerwartet geschlossen.")
