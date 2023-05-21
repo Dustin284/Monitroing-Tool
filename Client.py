@@ -31,14 +31,14 @@ def get_ram_usage():
 def get_time():
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
     return current_time
-def add_to_json():
+def add_to_json(column_name, value):
     try:
         # Load existing data from the JSON file
         with open("config_client.json", 'r') as file:
             existing_data = json.load(file)
 
         # Increment the specified field value
-        existing_data["send_total_stats"] += 1
+        existing_data[column_name] += value
 
         # Write the updated data back to the JSON file
         with open("config_client.json", 'w') as file:
@@ -129,7 +129,7 @@ def send_data(server_host, server_port):
         # Sende die Daten an den Server
         data = f"{pc_name};{cpu_usage};{memory_usage};{current_time}"
         client_socket.sendall(data.encode())
-        add_to_json()
+        add_to_json("send_total_stats", 1)
         print(f"Daten erfolgreich gesendet: {data}")
 
     except ConnectionRefusedError:
