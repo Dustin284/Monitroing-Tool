@@ -7,6 +7,7 @@ import datetime
 import json
 import os.path
 import re
+import cpuinfo
 ############################################## Variablen ##############################################
 pc_name = ""
 cpu_usage = 0
@@ -19,15 +20,15 @@ client_socket = None
 def get_pc_name():
     pc_name = platform.node()
     return pc_name
-
+def get_cpu_name():
+    cpu_name = cpuinfo.get_cpu_info()['brand_raw']
+    return cpu_name
 def get_cpu_usage():
     cpu_usage = psutil.cpu_percent(interval=1)
     return cpu_usage
-
 def get_ram_usage():
     ram_usage = psutil.virtual_memory().percent
     return ram_usage
-
 def get_time():
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
     return current_time
@@ -48,7 +49,6 @@ def add_to_json(column_name, value):
 
     except Exception as e:
         print("An error occurred while updating the JSON file:", str(e))
-
 ############################################## Messages ##############################################
 def show_connection_error_10061():
     tk.Tk().withdraw()
@@ -57,6 +57,9 @@ def show_connection_error_10061():
 def show_config_error_not_found():
     tk.Tk().withdraw()
     messagebox.showerror("Fehler", "Konfigurationsdatei nicht gefunden: config_client.json")
+def show_pc_specs_error_not_found():
+    tk.Tk().withdraw()
+    messagebox.showerror("Fehler", "Konfigurationsdatei nicht gefunden: pc_specs.json")
 def show_config_success_message():
     tk.Tk().withdraw()
     messagebox.showinfo("Erfolgreich", "Die Konfiguration wurde erfolgreich erstellt.")
@@ -112,6 +115,26 @@ def configure_server():
     ok_button.pack()
 
     root.mainloop()
+def create_pc_specs_json():
+    pc_specs = {
+        "pc_name": pc_name,
+        "cpu_name": get_cpu_name(),
+    }
+
+    with open('pc_specs.json', 'w') as f:
+        json.dump(pc_specs, f, indent=4)
+def read_pc_specs():
+    config_file = "pc_specs.json"
+
+    if not os.path.isfile(config_file):
+        show_pc_specs_error_not_found()
+        create_pc_specs_json()
+        return None
+
+    with open(config_file, 'r') as f:
+        pc_specs = json.load(f)
+
+    return pc_specs
 ############################################## Utils ##############################################
 def is_valid_ipv4(ip):
     pattern = re.compile(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b")
@@ -139,13 +162,12 @@ def send_data(server_host, server_port):
     finally:
         # Schließe die Verbindung
         client_socket.close()
-
 ############################################## Main ##############################################
 if __name__ == '__main__':
-    config = read_config()
     pc_name = get_pc_name()
-
-    if config is not None:
+    config = read_config()
+    pc_specs = read_pc_specs()
+    if config and pc_specs is not None:
         server_host = config.get('server_host')
         server_port = config.get('server_port')
         print(f"Verbindung hergestellt zu: {server_host}:{server_port}")
