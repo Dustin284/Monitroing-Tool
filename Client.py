@@ -8,6 +8,7 @@ import json
 import os.path
 import re
 import cpuinfo
+import logging
 ############################################## Variablen ##############################################
 pc_name = ""
 cpu_usage = 0
@@ -53,15 +54,19 @@ def add_to_json(column_name, value):
 def show_connection_error_10061():
     tk.Tk().withdraw()
     messagebox.showerror("Verbindungsfehler", "[WinError 10061] Es konnte keine Verbindung hergestellt werden, da der Zielcomputer die Verbindung verweigerte.")
+    logging.error("[WinError 10061] Es konnte keine Verbindung hergestellt werden, da der Zielcomputer die Verbindung verweigerte.")
     exit()
 def show_config_error_not_found():
     tk.Tk().withdraw()
+    logging.error("Konfigurationsdatei nicht gefunden: config_client.json")
     messagebox.showerror("Fehler", "Konfigurationsdatei nicht gefunden: config_client.json")
 def show_pc_specs_error_not_found():
     tk.Tk().withdraw()
+    logging.error("Konfigurationsdatei nicht gefunden: pc_specs.json")
     messagebox.showerror("Fehler", "Konfigurationsdatei nicht gefunden: pc_specs.json")
 def show_config_success_message():
     tk.Tk().withdraw()
+    logging.info("Die Konfiguration wurde erfolgreich erstellt.")
     messagebox.showinfo("Erfolgreich", "Die Konfiguration wurde erfolgreich erstellt.")
 ############################################## Config ##############################################
 def read_config():
@@ -78,9 +83,11 @@ def read_config():
     return config
 def save_config(root, server_host, server_port):
     if not is_valid_ipv4(server_host):
+        logging.error("Ungültige IPv4-Adresse")
         messagebox.showerror("Fehler", "Ungültige IPv4-Adresse")
         exit()
     if not is_valid_port(server_port):
+        logging.error("Ungültiger Port")
         messagebox.showerror("Fehler", "Ungültiger Port")
         exit()
     root.destroy()
@@ -154,6 +161,7 @@ def send_data(server_host, server_port):
         client_socket.sendall(data.encode())
         add_to_json("send_total_stats", 1)
         print(f"Daten erfolgreich gesendet: {data}")
+        logging.info(f"Daten erfolgreich gesendet: {data}")
 
     except ConnectionRefusedError:
         show_connection_error_10061()
@@ -161,9 +169,12 @@ def send_data(server_host, server_port):
 
     finally:
         # Schließe die Verbindung
+        logging.info("Verbindung zum Server geschlossen")
         client_socket.close()
 ############################################## Main ##############################################
 if __name__ == '__main__':
+    #Logging
+    #logging.basicConfig(filename='client.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(message)s')
     pc_name = get_pc_name()
     config = read_config()
     pc_specs = read_pc_specs()
